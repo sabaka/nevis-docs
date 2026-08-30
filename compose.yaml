@@ -3,11 +3,44 @@ services:
     image: 'ollama/ollama:latest'
     ports:
       - '11434'
+    volumes:
+      - 'ollama-models:/root/.ollama'
+    healthcheck:
+      test: ['CMD', 'ollama', 'list']
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 10s
+  # One-shot: pulls the embedding model once Ollama is serving, so no manual step is
+  # needed. Talks to the ollama service over the compose network; the server performs
+  # the download into the shared ollama-models volume, so this exits as soon as the
+  # model is present. Ignored by spring-boot-docker-compose, which would otherwise wait
+  # for a container that is designed to exit.
+  ollama-model-pull:
+    image: 'ollama/ollama:latest'
+    depends_on:
+      ollama:
+        condition: service_healthy
+    environment:
+      - 'OLLAMA_HOST=http://ollama:11434'
+    entrypoint: ['/bin/sh', '-c', 'ollama pull mxbai-embed-large']
+    restart: 'no'
+    labels:
+      org.springframework.boot.ignore: 'true'
   postgres:
-    image: 'postgres:latest'
+    image: 'pgvector/pgvector:pg18'
+    # spring-boot-docker-compose identifies services by image name, and 'pgvector/pgvector'
+    # does not match its built-in 'postgres' matcher, so no JdbcConnectionDetails bean was
+    # created and spring.datasource.url had to be hardcoded. This label overrides image-based
+    # detection and makes Boot treat the service as Postgres, deriving url/username/password
+    # from the environment below and the mapped port.
+    labels:
+      org.springframework.boot.service-connection: 'postgres'
     environment:
       - 'POSTGRES_DB=mydatabase'
       - 'POSTGRES_PASSWORD=secret'
       - 'POSTGRES_USER=myuser'
     ports:
       - '5432'
+volumes:
+  ollama-models:

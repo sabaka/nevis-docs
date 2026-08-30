@@ -6,7 +6,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.github.sabaka.nevis_docs.PostgresTestcontainersConfiguration;
+import com.github.sabaka.nevis_docs.search.EntityType;
 import com.jayway.jsonpath.JsonPath;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,8 +17,10 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.simple.JdbcClient;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
+@ActiveProfiles("test")
 @SpringBootTest
 @AutoConfigureMockMvc
 @Import(PostgresTestcontainersConfiguration.class)
@@ -128,6 +132,102 @@ class ClientDocumentIntegrationTest {
         .andExpect(status().isBadRequest());
   }
 
+  @Test
+  void createClient_shouldPersistClientSearchEntry() throws Exception {
+    String createClientRequest =
+        """
+        {
+          "first_name": "John",
+          "last_name": "Doe",
+          "email": "search.client@neviswealth.com",
+          "description": "Private wealth client",
+          "social_links": ["https://linkedin.com/in/john-doe"]
+        }
+        """;
+
+    var createClientResult =
+        mockMvc
+            .perform(
+                post("/clients")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(createClientRequest))
+            .andDo(log())
+            .andExpect(status().isCreated())
+            .andReturn();
+
+    UUID clientId =
+        UUID.fromString(
+            JsonPath.read(createClientResult.getResponse().getContentAsString(), "$.id"));
+
+    Optional<SearchEntryRow> entry = findEntry(EntityType.CLIENT, clientId);
+    assertThat(entry).isPresent();
+    SearchEntryRow row = entry.orElseThrow();
+    assertThat(row.searchableText())
+        .isEqualTo(
+            "John Doe search.client@neviswealth.com Private wealth client"
+                + " https://linkedin.com/in/john-doe");
+    assertThat(row.lexicalIndex()).isNotBlank();
+    assertThat(row.embeddingStatus()).isEqualTo("NOT_REQUIRED");
+    assertThat(row.embeddingPresent()).isFalse();
+  }
+
+  @Test
+  void createDocument_shouldPersistDocumentSearchEntryInPendingState() throws Exception {
+    String createClientRequest =
+        """
+        {
+          "first_name": "John",
+          "last_name": "Doe",
+          "email": "search.document@neviswealth.com",
+          "description": "Private wealth client",
+          "social_links": ["https://linkedin.com/in/john-doe"]
+        }
+        """;
+
+    var createClientResult =
+        mockMvc
+            .perform(
+                post("/clients")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(createClientRequest))
+            .andDo(log())
+            .andExpect(status().isCreated())
+            .andReturn();
+
+    String clientId = JsonPath.read(createClientResult.getResponse().getContentAsString(), "$.id");
+
+    String createDocumentRequest =
+        """
+        {
+          "title": "Electricity statement",
+          "content": "Utility bill for 10 Downing Street"
+        }
+        """;
+
+    var createDocumentResult =
+        mockMvc
+            .perform(
+                post("/clients/{clientId}/documents", clientId)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(createDocumentRequest))
+            .andDo(log())
+            .andExpect(status().isCreated())
+            .andReturn();
+
+    UUID documentId =
+        UUID.fromString(
+            JsonPath.read(createDocumentResult.getResponse().getContentAsString(), "$.id"));
+
+    Optional<SearchEntryRow> entry = findEntry(EntityType.DOCUMENT, documentId);
+    assertThat(entry).isPresent();
+    SearchEntryRow row = entry.orElseThrow();
+    assertThat(row.searchableText())
+        .isEqualTo("Electricity statement\nUtility bill for 10 Downing Street");
+    assertThat(row.lexicalIndex()).isNotBlank();
+    assertThat(row.embeddingStatus()).isEqualTo("PENDING");
+    assertThat(row.embeddingPresent()).isFalse();
+  }
+
   private ClientRow readClient(UUID id) {
     return jdbcClient
         .sql(
@@ -160,8 +260,43 @@ class ClientDocumentIntegrationTest {
     return jdbcClient.sql("select count(*) from document").query(Long.class).single();
   }
 
+  private Optional<SearchEntryRow> findEntry(EntityType entityType, UUID entityId) {
+    return jdbcClient
+        .sql(
+            """
+            select searchable_text,
+                   lexical_index::text as lexical_index,
+                   embedding_status,
+                   embedding_error,
+                   embedding is not null as embedding_present,
+                   coalesce(vector_dims(embedding), 0) as embedding_dims
+            from search_entry
+            where entity_type = :entityType and entity_id = :entityId
+            """)
+        .param("entityType", entityType.name())
+        .param("entityId", entityId)
+        .query(
+            (rs, rowNum) ->
+                new SearchEntryRow(
+                    rs.getString("searchable_text"),
+                    rs.getString("lexical_index"),
+                    rs.getString("embedding_status"),
+                    rs.getString("embedding_error"),
+                    rs.getBoolean("embedding_present"),
+                    rs.getInt("embedding_dims")))
+        .optional();
+  }
+
   private record ClientRow(
       String firstName, String lastName, String email, String description, String[] socialLinks) {}
 
   private record DocumentRow(String clientId, String title, String content) {}
+
+  private record SearchEntryRow(
+      String searchableText,
+      String lexicalIndex,
+      String embeddingStatus,
+      String embeddingError,
+      boolean embeddingPresent,
+      int embeddingDims) {}
 }

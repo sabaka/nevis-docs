@@ -2,11 +2,16 @@ package com.github.sabaka.nevis_docs.client;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.assertArg;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
+import com.github.sabaka.nevis_docs.search.EntityType;
+import com.github.sabaka.nevis_docs.search.SearchIndexer;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -29,17 +34,19 @@ class DocumentServiceTest {
 
   @Mock private ClientRepository clientRepository;
   @Mock private DocumentRepository documentRepository;
+  @Mock private SearchIndexer searchIndexer;
 
   private DocumentService documentService;
 
   @BeforeEach
   void setUp() {
     Clock clock = Clock.fixed(CREATED_AT, ZoneOffset.UTC);
-    documentService = new DocumentService(clientRepository, documentRepository, clock);
+    documentService =
+        new DocumentService(clientRepository, documentRepository, clock, searchIndexer);
   }
 
   @Test
-  void create_whenClientExists_shouldPersistDocumentWithGeneratedIdAndTimestamp() {
+  void create_whenClientExists_shouldPersistAndIndexDocumentWithGeneratedIdAndTimestamp() {
     given(clientRepository.existsById(CLIENT_ID)).willReturn(true);
 
     Document result =
@@ -64,6 +71,14 @@ class DocumentServiceTest {
                           CREATED_AT);
                   assertThat(saved).isSameAs(result);
                 }));
+    verify(searchIndexer)
+        .index(
+            eq(EntityType.DOCUMENT),
+            eq(result.id()),
+            assertArg(
+                searchableText ->
+                    assertThat(searchableText.get())
+                        .isEqualTo("Electricity statement\nUtility bill for 10 Downing Street")));
   }
 
   @Test
@@ -80,5 +95,21 @@ class DocumentServiceTest {
         .extracting(ClientNotFoundException::clientId)
         .isEqualTo(UNKNOWN_CLIENT_ID);
     verifyNoInteractions(documentRepository);
+    verifyNoInteractions(searchIndexer);
+  }
+
+  @Test
+  void create_whenIndexingFails_shouldPropagateException() {
+    given(clientRepository.existsById(CLIENT_ID)).willReturn(true);
+    willThrow(new IllegalStateException("indexing failed"))
+        .given(searchIndexer)
+        .index(any(), any(), any());
+
+    ThrowableAssert.ThrowingCallable createDocument =
+        () ->
+            documentService.create(
+                CLIENT_ID, "Electricity statement", "Utility bill for 10 Downing Street");
+
+    assertThatThrownBy(createDocument).isInstanceOf(IllegalStateException.class);
   }
 }

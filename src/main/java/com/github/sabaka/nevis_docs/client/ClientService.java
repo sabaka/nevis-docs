@@ -1,8 +1,13 @@
 package com.github.sabaka.nevis_docs.client;
 
+import com.github.sabaka.nevis_docs.search.EntityType;
+import com.github.sabaka.nevis_docs.search.SearchIndexer;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,9 +16,11 @@ import org.springframework.transaction.annotation.Transactional;
 class ClientService {
 
   private final ClientRepository clientRepository;
+  private final SearchIndexer searchIndexer;
 
-  ClientService(ClientRepository clientRepository) {
+  ClientService(ClientRepository clientRepository, SearchIndexer searchIndexer) {
     this.clientRepository = clientRepository;
+    this.searchIndexer = searchIndexer;
   }
 
   @Transactional
@@ -37,6 +44,16 @@ class ClientService {
             description,
             normalizedSocialLinks);
     clientRepository.save(client);
+    searchIndexer.index(EntityType.CLIENT, client.id(), () -> searchableText(client));
     return client;
+  }
+
+  private static String searchableText(Client client) {
+    return Stream.concat(
+            Stream.of(client.firstName(), client.lastName(), client.email(), client.description()),
+            client.socialLinks().stream())
+        .filter(Objects::nonNull)
+        .filter(part -> !part.isBlank())
+        .collect(Collectors.joining(" "));
   }
 }
