@@ -1,0 +1,31 @@
+### Creatre client
+POST http://localhost:8080/clients
+Content-Type: application/json
+
+{
+  "email": "illia@gmail.com",
+  "first_name": "Illia",
+  "last_name": "d",
+  "description": "Test client"
+}
+> {%
+    client.test("Request executed successfully", function () {
+        client.assert(response.status === 201, "Response status is not 201");
+        if (response.status === 201 && response.body.id)
+            client.global.set("client_id", response.body.id);
+    });
+ %}
+
+### GET request to example server
+< {%
+    request.variables.set("clientId", client.global.get("client_id"))
+%}
+POST http://localhost:8080/clients/{{clientId}}/documents
+Content-Type: application/json
+
+{
+  "title": "utility bill",
+  "content": "blah"
+}
+
+###

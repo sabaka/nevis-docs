@@ -1,0 +1,3 @@
+spring:
+  application.name: nevis-docs
+  jackson.property-naming-strategy: SNAKE_CASE

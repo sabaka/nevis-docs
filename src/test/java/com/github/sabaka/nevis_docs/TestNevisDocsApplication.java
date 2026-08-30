@@ -4,7 +4,7 @@ import org.springframework.boot.SpringApplication;
 
 public class TestNevisDocsApplication {
 
-  public static void main(String[] args) {
+  static void main(String[] args) {
     SpringApplication.from(NevisDocsApplication::main)
         .with(TestcontainersConfiguration.class)
         .run(args);
