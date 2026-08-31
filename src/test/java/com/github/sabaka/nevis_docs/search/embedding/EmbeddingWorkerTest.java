@@ -70,6 +70,12 @@ class EmbeddingWorkerTest {
     EMBEDDING_WORKER_LOGGER.detachAppender(logAppender);
   }
 
+  private static float[] nonFiniteEmbedding(float value) {
+    float[] embedding = new float[EMBEDDING_DIMENSIONS];
+    Arrays.fill(embedding, value);
+    return embedding;
+  }
+
   private static float[] fakeEmbedding() {
     float[] embedding = new float[EMBEDDING_DIMENSIONS];
     Arrays.fill(embedding, EMBEDDING_VALUE);
@@ -135,8 +141,9 @@ class EmbeddingWorkerTest {
                   throw new RuntimeException("boom " + SEARCHABLE_TEXT);
                 },
             "RuntimeException"),
+        Arguments.of((Answer<float[]>) invocation -> new float[512], "invalid embedding"),
         Arguments.of(
-            (Answer<float[]>) invocation -> new float[512], "unexpected embedding dimensions: 512"),
+            (Answer<float[]>) invocation -> nonFiniteEmbedding(Float.NaN), "invalid embedding"),
         Arguments.of((Answer<float[]>) invocation -> null, "NullPointerException"));
   }
 

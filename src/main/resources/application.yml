@@ -18,6 +18,10 @@ spring:
         pull-model-strategy: never
 
 search:
+  candidate-limit: 50
+  result-limit: 20
+  rrf-k: 60
+  max-semantic-distance: 0.5
   embedding:
     enabled: true
     batch-size: 10

@@ -1,6 +1,7 @@
 package com.github.sabaka.nevis_docs.search.embedding;
 
 import com.github.sabaka.nevis_docs.search.EntityType;
+import com.github.sabaka.nevis_docs.search.VectorLiteral;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
@@ -59,7 +60,7 @@ class EmbeddingRepository {
                 embedding_error = null, updated_at = :updatedAt
             where entity_type = :entityType and entity_id = :entityId
             """)
-        .param("embedding", toVectorLiteral(embedding))
+        .param("embedding", VectorLiteral.of(embedding))
         .param("updatedAt", Timestamp.from(updatedAt))
         .param("entityType", entityType.name())
         .param("entityId", entityId)
@@ -80,16 +81,5 @@ class EmbeddingRepository {
         .param("entityType", entityType.name())
         .param("entityId", entityId)
         .update();
-  }
-
-  private static String toVectorLiteral(float[] embedding) {
-    StringBuilder builder = new StringBuilder(embedding.length * 8 + 2).append('[');
-    for (int index = 0; index < embedding.length; index++) {
-      if (index > 0) {
-        builder.append(',');
-      }
-      builder.append(embedding[index]);
-    }
-    return builder.append(']').toString();
   }
 }

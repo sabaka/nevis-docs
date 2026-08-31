@@ -218,6 +218,10 @@
                             <contractPackageRegex>.*client.*</contractPackageRegex>
                             <baseClassFQN>com.github.sabaka.nevis_docs.client.ClientContractBase</baseClassFQN>
                         </baseClassMapping>
+                        <baseClassMapping>
+                            <contractPackageRegex>.*search.*</contractPackageRegex>
+                            <baseClassFQN>com.github.sabaka.nevis_docs.search.SearchContractBase</baseClassFQN>
+                        </baseClassMapping>
                     </baseClassMappings>
                 </configuration>
                 <dependencies>
