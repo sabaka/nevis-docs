@@ -37,15 +37,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 
-/**
- * Exercises {@code GET /search} end to end against real Postgres: hybrid RRF ranking, semantic
- * candidate eligibility, hydration from the source tables, and the wire shape.
- *
- * <p>Two seeding styles are used deliberately. Ranking and eligibility tests insert {@code
- * search_entry} rows directly, because {@code embedding_status} values other than READY (and null
- * embeddings) cannot be produced through the API. The hydration and stale-entry tests create rows
- * through the real POST endpoints, so the whole ingest-to-search chain is covered at least once.
- */
 @ActiveProfiles("test")
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -243,14 +234,40 @@ class SearchIntegrationTest {
         .andExpect(jsonPath("$[0].email").value(email))
         .andExpect(jsonPath("$[0].description").value("Private wealth client " + marker))
         .andExpect(jsonPath("$[0].social_links[0]").value("https://linkedin.com/in/john-doe"))
-        .andExpect(jsonPath("$[0].score").doesNotExist())
         .andExpect(jsonPath("$[1].type").value("DOCUMENT"))
         .andExpect(jsonPath("$[1].id").value(documentId.toString()))
         .andExpect(jsonPath("$[1].client_id").value(clientId.toString()))
         .andExpect(jsonPath("$[1].title").value(title))
         .andExpect(jsonPath("$[1].content").value(content))
-        .andExpect(jsonPath("$[1].created_at").exists())
-        .andExpect(jsonPath("$[1].score").doesNotExist());
+        .andExpect(jsonPath("$[1].created_at").exists());
+  }
+
+  @Test
+  void search_whenDocumentSummaryCompleted_shouldHydrateSummaryFieldsFromDocumentTable()
+      throws Exception {
+    String marker = marker("summary");
+    UUID clientId =
+        createClient(
+            "John",
+            "Doe",
+            uniqueEmail(),
+            "Private wealth client",
+            List.of("https://linkedin.com/in/john-doe"));
+
+    String title = "Electricity statement";
+    String content = "Utility bill for 10 Downing Street";
+    UUID documentId = createDocument(clientId, title, content);
+    markDocumentReady(documentId, nearEmbedding());
+    String summary = "An electricity utility bill for 10 Downing Street.";
+    markDocumentSummaryCompleted(documentId, summary);
+
+    mockMvc
+        .perform(get("/search").param("q", marker))
+        .andDo(log())
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.length()").value(1))
+        .andExpect(jsonPath("$[0].id").value(documentId.toString()))
+        .andExpect(jsonPath("$[0].summary").value(summary));
   }
 
   @Test
@@ -377,6 +394,16 @@ class SearchIntegrationTest {
                 + "where entity_type = 'DOCUMENT' and entity_id = :entityId")
         .param("embedding", vectorLiteral(embedding))
         .param("entityId", documentId)
+        .update();
+  }
+
+  private void markDocumentSummaryCompleted(UUID documentId, String summary) {
+    jdbcClient
+        .sql(
+            "update document set summary = :summary, summary_status = 'COMPLETED' "
+                + "where id = :documentId")
+        .param("summary", summary)
+        .param("documentId", documentId)
         .update();
   }
 

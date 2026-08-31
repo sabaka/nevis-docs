@@ -1,8 +1,10 @@
 package com.github.sabaka.nevis_docs.client;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.log;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.github.sabaka.nevis_docs.PostgresTestcontainersConfiguration;
@@ -70,6 +72,8 @@ class ClientDocumentIntegrationTest {
                     .content(createDocumentRequest))
             .andDo(log())
             .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.summary").value(nullValue()))
+            .andExpect(jsonPath("$.summary_status").value("PENDING"))
             .andReturn();
 
     String documentId =
@@ -86,6 +90,8 @@ class ClientDocumentIntegrationTest {
     assertThat(documentRow.clientId()).isEqualToIgnoringCase(clientId);
     assertThat(documentRow.title()).isEqualTo("Electricity statement");
     assertThat(documentRow.content()).isEqualTo("Utility bill for 10 Downing Street");
+    assertThat(documentRow.summary()).isNull();
+    assertThat(documentRow.summaryStatus()).isEqualTo("PENDING");
   }
 
   @Test
@@ -247,12 +253,18 @@ class ClientDocumentIntegrationTest {
 
   private DocumentRow readDocument(UUID id) {
     return jdbcClient
-        .sql("select client_id, title, content from document where id = :id")
+        .sql(
+            "select client_id, title, content, summary, summary_status "
+                + "from document where id = :id")
         .param("id", id)
         .query(
             (rs, _) ->
                 new DocumentRow(
-                    rs.getString("client_id"), rs.getString("title"), rs.getString("content")))
+                    rs.getString("client_id"),
+                    rs.getString("title"),
+                    rs.getString("content"),
+                    rs.getString("summary"),
+                    rs.getString("summary_status")))
         .single();
   }
 
@@ -290,7 +302,8 @@ class ClientDocumentIntegrationTest {
   private record ClientRow(
       String firstName, String lastName, String email, String description, String[] socialLinks) {}
 
-  private record DocumentRow(String clientId, String title, String content) {}
+  private record DocumentRow(
+      String clientId, String title, String content, String summary, String summaryStatus) {}
 
   private record SearchEntryRow(
       String searchableText,

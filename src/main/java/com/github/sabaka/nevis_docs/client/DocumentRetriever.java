@@ -39,6 +39,8 @@ class DocumentRetriever implements EntityRetriever<Document> {
         document.clientId(),
         document.title(),
         document.content(),
-        document.createdAt());
+        document.createdAt(),
+        document.summary(),
+        document.summaryStatus());
   }
 }

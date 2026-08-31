@@ -1,5 +1,6 @@
 package com.github.sabaka.nevis_docs.client;
 
+import com.github.sabaka.nevis_docs.summary.DocumentSummaryStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -95,7 +96,9 @@ class ClientController {
       @Schema(format = "uuid") UUID clientId,
       String title,
       String content,
-      @Schema(format = "date-time") Instant createdAt) {
+      @Schema(format = "date-time") Instant createdAt,
+      @Nullable String summary,
+      DocumentSummaryStatus summaryStatus) {
 
     static DocumentResponse from(Document document) {
       return new DocumentResponse(
@@ -103,7 +106,9 @@ class ClientController {
           document.clientId(),
           document.title(),
           document.content(),
-          document.createdAt());
+          document.createdAt(),
+          document.summary(),
+          document.summaryStatus());
     }
   }
 }

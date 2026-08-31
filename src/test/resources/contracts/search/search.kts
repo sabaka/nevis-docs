@@ -28,7 +28,8 @@ listOf(
                         "client_id" to "31a67593-e39a-4e22-83df-f3494b55a439",
                         "title" to "Electricity statement",
                         "content" to "Utility bill for 10 Downing Street",
-                        "created_at" to "2026-08-29T14:00:00Z"
+                        "created_at" to "2026-08-29T14:00:00Z",
+                        "summary" to "An electricity utility bill for 10 Downing Street."
                     )
                 )
             )

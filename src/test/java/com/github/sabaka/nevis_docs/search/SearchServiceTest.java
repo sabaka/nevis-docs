@@ -9,6 +9,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
+import com.github.sabaka.nevis_docs.summary.DocumentSummaryStatus;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.EnumMap;
@@ -220,6 +221,8 @@ class SearchServiceTest {
         UUID.randomUUID(),
         "Electricity statement",
         "Utility bill for 10 Downing Street",
-        Instant.parse("2026-08-29T14:00:00Z"));
+        Instant.parse("2026-08-29T14:00:00Z"),
+        "An electricity utility bill for 10 Downing Street.",
+        DocumentSummaryStatus.COMPLETED);
   }
 }

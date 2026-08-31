@@ -12,6 +12,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 
 import com.github.sabaka.nevis_docs.search.EntityType;
 import com.github.sabaka.nevis_docs.search.SearchIndexer;
+import com.github.sabaka.nevis_docs.summary.DocumentSummaryStatus;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -63,12 +64,16 @@ class DocumentServiceTest {
                           Document::clientId,
                           Document::title,
                           Document::content,
-                          Document::createdAt)
+                          Document::createdAt,
+                          Document::summary,
+                          Document::summaryStatus)
                       .containsExactly(
                           CLIENT_ID,
                           "Electricity statement",
                           "Utility bill for 10 Downing Street",
-                          CREATED_AT);
+                          CREATED_AT,
+                          null,
+                          DocumentSummaryStatus.PENDING);
                   assertThat(saved).isSameAs(result);
                 }));
     verify(searchIndexer)

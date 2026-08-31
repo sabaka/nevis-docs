@@ -3,6 +3,7 @@ package com.github.sabaka.nevis_docs.search;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 
+import com.github.sabaka.nevis_docs.summary.DocumentSummaryStatus;
 import io.restassured.module.mockmvc.RestAssuredMockMvc;
 import java.time.Instant;
 import java.util.List;
@@ -46,7 +47,9 @@ public abstract class SearchContractBase {
                     CLIENT_ID,
                     "Electricity statement",
                     "Utility bill for 10 Downing Street",
-                    CREATED_AT)));
+                    CREATED_AT,
+                    "An electricity utility bill for 10 Downing Street.",
+                    DocumentSummaryStatus.COMPLETED)));
     given(searchService.search("unavailable"))
         .willThrow(new SearchUnavailableException("query embedding unavailable"));
   }

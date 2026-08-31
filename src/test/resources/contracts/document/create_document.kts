@@ -28,7 +28,7 @@ listOf(
                 )
             }
             body = body(
-                mapOf(
+                mapOf<String, Any?>(
                     "id" to value(
                         consumer("66206f62-cff6-4e52-ad8e-978b8d8b9094"),
                         producer(regex("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"))
@@ -42,7 +42,9 @@ listOf(
                     "created_at" to value(
                         consumer("2026-08-29T14:00:00Z"),
                         producer(regex("[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}([.][0-9]+)?Z"))
-                    )
+                    ),
+                    "summary" to null,
+                    "summary_status" to "PENDING"
                 )
             )
         }

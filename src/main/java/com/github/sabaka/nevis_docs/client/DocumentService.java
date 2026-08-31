@@ -2,6 +2,7 @@ package com.github.sabaka.nevis_docs.client;
 
 import com.github.sabaka.nevis_docs.search.EntityType;
 import com.github.sabaka.nevis_docs.search.SearchIndexer;
+import com.github.sabaka.nevis_docs.summary.DocumentSummaryStatus;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.UUID;
@@ -33,7 +34,14 @@ class DocumentService {
       throw new ClientNotFoundException(clientId);
     }
     Document document =
-        new Document(UUID.randomUUID(), clientId, title, content, Instant.now(clock));
+        new Document(
+            UUID.randomUUID(),
+            clientId,
+            title,
+            content,
+            Instant.now(clock),
+            null,
+            DocumentSummaryStatus.PENDING);
     documentRepository.save(document);
     searchIndexer.index(EntityType.DOCUMENT, document.id(), () -> searchableText(document));
     return document;

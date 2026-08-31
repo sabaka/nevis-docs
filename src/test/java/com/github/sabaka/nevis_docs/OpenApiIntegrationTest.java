@@ -5,6 +5,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -38,7 +39,14 @@ class OpenApiIntegrationTest {
             jsonPath("$.components.schemas.ClientResponse.properties['id'].format").value("uuid"))
         .andExpect(
             jsonPath("$.components.schemas.DocumentResponse.properties['created_at'].format")
-                .value("date-time"));
+                .value("date-time"))
+        .andExpect(jsonPath("$.components.schemas.DocumentResponse.properties['summary']").exists())
+        .andExpect(
+            jsonPath("$.components.schemas.DocumentResponse.properties['summary_status']").exists())
+        .andExpect(
+            jsonPath("$.components.schemas.DocumentResponse.properties['summary_status'].enum")
+                .value(
+                    Matchers.containsInAnyOrder("PENDING", "PROCESSING", "COMPLETED", "FAILED")));
   }
 
   @Test
@@ -80,6 +88,9 @@ class OpenApiIntegrationTest {
             jsonPath(
                     "$.components.schemas.DocumentSearchResponse.allOf[1]"
                         + ".properties['created_at'].format")
-                .value("date-time"));
+                .value("date-time"))
+        .andExpect(
+            jsonPath("$.components.schemas.DocumentSearchResponse.allOf[1].properties['summary']")
+                .exists());
   }
 }

@@ -2,15 +2,22 @@ spring:
   application.name: nevis-docs
   docker:
     compose:
-      # The ollama-model-pull service downloads ~670 MB on a cold volume; `up --wait`
+      # The ollama-model-pull service downloads ~2.7 GB on a cold volume; `up --wait`
       # blocks on it, and the 2m default is not enough on a slow connection.
       readiness:
         timeout: 10m
   jackson.property-naming-strategy: SNAKE_CASE
   ai:
-    model.embedding: ollama
+    model:
+      chat: ollama
+      embedding: ollama
     ollama:
       base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
+      chat:
+        model: llama3.2:3b
+        temperature: 0.1
+        num-ctx: 8192
+        num-predict: 160
       embedding:
         model: mxbai-embed-large
         truncate: true
@@ -26,3 +33,9 @@ search:
     enabled: true
     batch-size: 10
     poll-delay: PT1S
+
+summary:
+  enabled: true
+  batch-size: 5
+  poll-delay: PT2S
+  max-input-characters: 20000

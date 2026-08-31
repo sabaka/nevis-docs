@@ -56,10 +56,6 @@ class EmbeddingWorkerTest {
   void setUp() {
     Clock clock = Clock.fixed(CREATED_AT, ZoneOffset.UTC);
     embeddingWorker = new EmbeddingWorker(embeddingRepository, embeddingModel, clock, BATCH_SIZE);
-  }
-
-  @BeforeEach
-  void attachLogAppender() {
     logAppender = new ListAppender<>();
     logAppender.start();
     EMBEDDING_WORKER_LOGGER.addAppender(logAppender);

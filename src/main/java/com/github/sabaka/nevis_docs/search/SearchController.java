@@ -60,7 +60,8 @@ class SearchController {
               document.clientId(),
               document.title(),
               document.content(),
-              document.createdAt());
+              document.createdAt(),
+              document.summary());
     };
   }
 
@@ -85,6 +86,7 @@ class SearchController {
       @Schema(format = "uuid") UUID clientId,
       String title,
       String content,
-      @Schema(format = "date-time") Instant createdAt)
+      @Schema(format = "date-time") Instant createdAt,
+      @Nullable String summary)
       implements SearchResponse {}
 }

@@ -11,10 +11,10 @@ services:
       timeout: 5s
       retries: 30
       start_period: 10s
-  # One-shot: pulls the embedding model once Ollama is serving, so no manual step is
+  # One-shot: pulls both models once Ollama is serving, so no manual step is
   # needed. Talks to the ollama service over the compose network; the server performs
   # the download into the shared ollama-models volume, so this exits as soon as the
-  # model is present. Ignored by spring-boot-docker-compose, which would otherwise wait
+  # models are present. Ignored by spring-boot-docker-compose, which would otherwise wait
   # for a container that is designed to exit.
   ollama-model-pull:
     image: 'ollama/ollama:latest'
@@ -23,7 +23,7 @@ services:
         condition: service_healthy
     environment:
       - 'OLLAMA_HOST=http://ollama:11434'
-    entrypoint: ['/bin/sh', '-c', 'ollama pull mxbai-embed-large']
+    entrypoint: ['/bin/sh', '-c', 'ollama pull mxbai-embed-large && ollama pull llama3.2:3b']
     restart: 'no'
     labels:
       org.springframework.boot.ignore: 'true'

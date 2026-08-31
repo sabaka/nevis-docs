@@ -4,6 +4,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 
+import com.github.sabaka.nevis_docs.summary.DocumentSummaryStatus;
 import io.restassured.module.mockmvc.RestAssuredMockMvc;
 import java.time.Instant;
 import java.util.UUID;
@@ -35,7 +36,14 @@ public abstract class DocumentContractBase {
             invocation -> {
               String title = invocation.getArgument(1);
               String content = invocation.getArgument(2);
-              return new Document(DOCUMENT_ID, CLIENT_ID, title, content, CREATED_AT);
+              return new Document(
+                  DOCUMENT_ID,
+                  CLIENT_ID,
+                  title,
+                  content,
+                  CREATED_AT,
+                  null,
+                  DocumentSummaryStatus.PENDING);
             });
     given(documentService.create(eq(UNKNOWN_CLIENT_ID), any(), any()))
         .willThrow(new ClientNotFoundException(UNKNOWN_CLIENT_ID));
