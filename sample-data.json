@@ -1,0 +1,131 @@
+{
+  "_comment": "Sample data for exercising POST /clients, POST /clients/{id}/documents and GET /search. Load with: python3 load-sample-data.py",
+  "clients": [
+    {
+      "client": {
+        "first_name": "John",
+        "last_name": "Doe",
+        "email": "john.doe@neviswealth.com",
+        "description": "Private wealth client, London portfolio",
+        "social_links": ["https://linkedin.com/in/john-doe", "https://x.com/johndoe"]
+      },
+      "documents": [
+        {
+          "title": "Electricity statement",
+          "content": "Utility bill for 10 Downing Street, London SW1A 2AA. Account 4471029. Billing period March 2026. Amount due GBP 184.20."
+        },
+        {
+          "title": "Passport copy",
+          "content": "British passport, holder John Doe, number 512446789, issued 2021, expires 2031. Certified copy held on file for identity verification."
+        },
+        {
+          "title": "Portfolio review Q1 2026",
+          "content": "Discretionary mandate. Equities 62 percent, fixed income 28 percent, cash 10 percent. Benchmark outperformance of 1.4 percent for the quarter."
+        }
+      ]
+    },
+    {
+      "client": {
+        "first_name": "Amelia",
+        "last_name": "Okafor",
+        "email": "amelia.okafor@brightpath.io",
+        "description": "Entrepreneur, technology sector, pre-IPO liquidity planning",
+        "social_links": ["https://linkedin.com/in/amelia-okafor"]
+      },
+      "documents": [
+        {
+          "title": "Council tax bill",
+          "content": "Borough of Camden council tax demand for 22 Hartland Road. Band E. Residence confirmed from April 2025 to March 2026."
+        },
+        {
+          "title": "Share option agreement",
+          "content": "Grant of 45000 ordinary shares under the 2023 employee option scheme. Vesting over four years with a one year cliff. Strike price GBP 1.10."
+        },
+        {
+          "title": "Driving licence",
+          "content": "Photocard driving licence issued by DVLA. Holder Amelia Okafor. Valid until 2033. Used as secondary identity evidence."
+        }
+      ]
+    },
+    {
+      "client": {
+        "first_name": "Rafael",
+        "last_name": "Moreno",
+        "email": "rafael.moreno@neviswealth.com",
+        "description": "Family office relationship, cross-border estate planning",
+        "social_links": []
+      },
+      "documents": [
+        {
+          "title": "Bank statement January",
+          "content": "Current account statement. Opening balance EUR 82430. Salary credit EUR 9200. Standing order to mortgage provider EUR 2150. Closing balance EUR 88190."
+        },
+        {
+          "title": "Water services invoice",
+          "content": "Quarterly charge for supply and wastewater at Calle Serrano 41, Madrid. Occupier Rafael Moreno. Confirms residency at the billing address."
+        },
+        {
+          "title": "Last will and testament",
+          "content": "Executed will naming two executors. Estate divided between spouse and two children. Spanish and UK assets addressed under separate schedules."
+        }
+      ]
+    },
+    {
+      "client": {
+        "first_name": "Priya",
+        "last_name": "Raman",
+        "email": "priya.raman@meridiancapital.co.uk",
+        "description": "Institutional contact, pension trustee board",
+        "social_links": ["https://linkedin.com/in/priya-raman"]
+      },
+      "documents": [
+        {
+          "title": "Payslip February 2026",
+          "content": "Monthly earnings statement. Gross pay GBP 14200. Income tax GBP 4380. Pension contribution GBP 1136. Net pay GBP 8340."
+        },
+        {
+          "title": "Self assessment tax return",
+          "content": "Filed return for the year ending April 2025. Declared dividend income and rental profit. Balancing payment settled in full."
+        }
+      ]
+    },
+    {
+      "client": {
+        "first_name": "Tomas",
+        "last_name": "Novak",
+        "email": "tomas.novak@aldergrove.cz",
+        "description": null,
+        "social_links": ["https://linkedin.com/in/tomas-novak", "https://github.com/tnovak"]
+      },
+      "documents": [
+        {
+          "title": "Tenancy agreement",
+          "content": "Assured shorthold tenancy for Flat 3, 88 Grafton Street. Term twelve months from June 2025. Tenant Tomas Novak. Monthly rent GBP 1975."
+        },
+        {
+          "title": "Home insurance policy",
+          "content": "Buildings and contents cover. Policy number HP884120. Sum insured GBP 350000. Renewal due September 2026."
+        }
+      ]
+    },
+    {
+      "client": {
+        "first_name": "Grace",
+        "last_name": "Lindqvist",
+        "email": "grace.lindqvist@northharbour.se",
+        "description": "Philanthropic advisory, charitable trust structuring",
+        "social_links": []
+      },
+      "documents": [
+        {
+          "title": "Charitable trust deed",
+          "content": "Deed establishing a grant making foundation. Initial endowment SEK 12000000. Trustees meet quarterly to approve disbursements."
+        },
+        {
+          "title": "Broadband and telephone bill",
+          "content": "Monthly service charge for the property at Vasagatan 17, Stockholm. Subscriber Grace Lindqvist. Serves as proof of current address."
+        }
+      ]
+    }
+  ]
+}
